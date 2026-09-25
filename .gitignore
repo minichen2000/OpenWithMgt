@@ -1,0 +1,20 @@
+# 构建输出
+bin/
+obj/
+publish/
+[Dd]ebug/
+[Rr]elease/
+
+# Visual Studio
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Rider
+.idea/
+
+# 其他
+*.log
+Thumbs.db
