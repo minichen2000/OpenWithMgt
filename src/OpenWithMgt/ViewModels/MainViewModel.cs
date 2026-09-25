@@ -1,5 +1,7 @@
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.IO;
+using System.Text;
 using System.Windows;
 using Microsoft.Win32;
 using OpenWithMgt.Models;
@@ -107,7 +109,7 @@ public class MainViewModel : ViewModelBase
         }
 
         var result = MessageBox.Show(
-            $"确定删除菜单项 \"{item.DisplayName}\"（{item.SourceText}）？\n此操作会直接修改注册表，且不可撤销。",
+            $"确定删除菜单项 \"{item.DisplayName}\"（{item.ScopeText}，{item.SourceText}）？\n此操作会直接修改注册表，且不可撤销。",
             "确认删除", MessageBoxButton.YesNo, MessageBoxImage.Warning);
         if (result != MessageBoxResult.Yes)
         {
@@ -116,7 +118,7 @@ public class MainViewModel : ViewModelBase
 
         try
         {
-            RegistryMenuService.Delete(item.Source, item.KeyName);
+            RegistryMenuService.Delete(item.Source, item.ParentPath, item.KeyName);
             Items.Remove(item);
             StatusMessage = $"已删除：{item.DisplayName}";
         }
@@ -188,13 +190,55 @@ public class MainViewModel : ViewModelBase
             Title = "选择程序",
             Filter = "可执行文件 (*.exe)|*.exe|所有文件 (*.*)|*.*",
         };
-        if (dialog.ShowDialog() == true)
+        if (dialog.ShowDialog() != true)
         {
-            NewExePath = dialog.FileName;
-            if (string.IsNullOrWhiteSpace(NewKeyName))
+            return;
+        }
+
+        var appName = GetAppName(dialog.FileName);
+        NewExePath = dialog.FileName;
+        NewKeyName = "OpenWith" + SanitizeKeyName(appName);
+        NewDisplayName = $"用 {appName} 打开";
+        NewIconPath = dialog.FileName;
+        NewArguments = "%1";
+        NewScopeIndex = 0;
+        StatusMessage = "已按所选程序自动填充默认值，可直接点“添加”";
+    }
+
+    private static string GetAppName(string exePath)
+    {
+        try
+        {
+            var info = FileVersionInfo.GetVersionInfo(exePath);
+            if (!string.IsNullOrWhiteSpace(info.FileDescription))
             {
-                NewKeyName = Path.GetFileNameWithoutExtension(dialog.FileName);
+                return info.FileDescription.Trim();
+            }
+
+            if (!string.IsNullOrWhiteSpace(info.ProductName))
+            {
+                return info.ProductName.Trim();
             }
         }
+        catch
+        {
+            // 版本信息不可读时回退到文件名
+        }
+
+        return Path.GetFileNameWithoutExtension(exePath);
+    }
+
+    private static string SanitizeKeyName(string name)
+    {
+        var sb = new StringBuilder(name.Length);
+        foreach (var c in name)
+        {
+            if (char.IsLetterOrDigit(c) || c is '_' or '-' or '.')
+            {
+                sb.Append(c);
+            }
+        }
+
+        return sb.Length > 0 ? sb.ToString() : "App";
     }
 }

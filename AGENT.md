@@ -2,7 +2,11 @@
 
 ## 项目概述
 
-OpenWithMgt：C# / WPF / .NET 8 的 Windows 右键菜单管理工具，管理**文件**右键"用 xxx 打开"菜单项，即注册表 `Software\Classes\*\shell` 下的项（HKCU 当前用户 + HKLM 所有用户）。
+OpenWithMgt：C# / WPF / .NET 8 的 Windows 右键菜单管理工具，管理**文件**右键"用 xxx 打开"菜单项。枚举位置（HKCU + HKLM）：
+
+- `Software\Classes\*\shell` —— 所有文件的 shell 动词项
+- `Software\Classes\*\shellex\ContextMenuHandlers` —— COM 外壳扩展项（"上传到…"类）
+- `Software\Classes\SystemFileAssociations\.<ext>\shell` 与 `Software\Classes\.<ext>\shell` —— 特定后缀项
 
 ## 构建要求
 
@@ -26,6 +30,9 @@ OpenWithMgt：C# / WPF / .NET 8 的 Windows 右键菜单管理工具，管理**�
 - 程序清单声明 `requireAdministrator`：调试运行需管理员权限终端，否则进程启动失败
 - **删除注册表项不可恢复**：修改删除逻辑时务必小范围验证；建议用户删除前先导出备份
 - 添加/删除 HKLM 项在无管理员权限时会抛 `UnauthorizedAccessException`，必须给出友好提示
+- 显示名称解析：`MUIVerb` → 键默认值 → 子键名；`@dll,-id` 形式必须经 `SHLoadIndirectString` 解析，并去除 `&` 快捷键标记，保证与真实菜单文字一致
+- 外壳扩展项（COM）的真实菜单文字由运行时动态生成，无法静态获得，列表中以 `[扩展] <CLSID 友好名称或键名>` 表示
+- 应用图标由 `tools/IconGen` 生成（`dotnet run --project tools/IconGen`，须在仓库根目录执行），产物为 `assets/app.ico` 与 `assets/app.png`；不要手工编辑 .ico
 - 任何令牌、凭证（GitHub / Gitee token 等）**绝不写入本仓库**，也不要出现在提交历史中
 - git 双远程约定：`origin` = GitHub，`gitee` = Gitee。每次推送需双推：
 

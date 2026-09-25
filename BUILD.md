@@ -50,3 +50,15 @@ src/OpenWithMgt/bin/Release/net8.0-windows/win-x64/publish/OpenWithMgt.exe
 ```
 
 该 exe 为自包含单文件，目标机器无需安装 .NET 运行时即可运行。
+
+## 重新生成应用图标
+
+图标由 `tools/IconGen` 生成（WPF 矢量绘制 → 多尺寸 PNG 帧打包为 .ico）：
+
+```bash
+# 在仓库根目录执行
+dotnet run --project tools/IconGen
+```
+
+输出 `assets/app.ico`（含 16~256 多尺寸）与 `assets/app.png`（256px 预览图）。
+图标设计改动请直接修改 `tools/IconGen/Program.cs` 中的 `DrawIcon` 方法后重新运行。
