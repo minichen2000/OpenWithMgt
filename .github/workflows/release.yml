@@ -1,0 +1,73 @@
+# Release workflow: 仅在向 GitHub 推送 v* 标签时触发，日常 push 不发布
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 8 SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+
+      - name: Verify tag matches csproj version
+        shell: pwsh
+        run: |
+          $tag = "$env:GITHUB_REF_NAME"
+          $version = $tag -replace '^v', ''
+          $csproj = [xml](Get-Content "src/OpenWithMgt/OpenWithMgt.csproj")
+          $csprojVersion = $csproj.Project.PropertyGroup.Version
+          if ($csprojVersion -ne $version) {
+            Write-Error "Tag version '$version' does not match csproj Version '$csprojVersion'. Bump <Version> in src/OpenWithMgt/OpenWithMgt.csproj first."
+            exit 1
+          }
+          echo "version=$version" >> $env:GITHUB_OUTPUT
+        id: version
+
+      - name: Restore
+        run: dotnet restore
+
+      - name: Build (Release)
+        run: dotnet build -c Release --no-restore
+
+      - name: Package artifacts
+        shell: pwsh
+        run: |
+          $version = "${{ steps.version.outputs.version }}"
+          $exe = "src/OpenWithMgt/bin/Release/net48/OpenWithMgt.exe"
+          if (-not (Test-Path $exe)) { Write-Error "Build output not found: $exe"; exit 1 }
+          $staging = "artifacts/OpenWithMgt"
+          New-Item -ItemType Directory -Force -Path $staging | Out-Null
+          Copy-Item $exe $staging/
+          Copy-Item "README.md" $staging/
+          Compress-Archive -Path "$staging/*" -DestinationPath "artifacts/OpenWithMgt-v$version.zip"
+          Copy-Item $exe "artifacts/OpenWithMgt.exe"
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: OpenWithMgt ${{ github.ref_name }}
+          generate_release_notes: true
+          body: |
+            Windows 文件右键菜单"用 xxx 打开"项管理工具 / Manager for "Open with" entries in the Windows file context menu.
+
+            **下载 / Download**
+            - `OpenWithMgt-v${{ steps.version.outputs.version }}.zip`：解压即用（含 exe 与说明）/ unzip and run
+            - `OpenWithMgt.exe`：单文件绿色版 / single-file portable exe
+
+            **系统要求 / Requirements**：Windows 10 / 11（64 位），无需安装任何运行时 / no runtime required。启动时会请求 UAC 提权 / UAC elevation is requested at startup.
+          files: |
+            artifacts/OpenWithMgt-v${{ steps.version.outputs.version }}.zip
+            artifacts/OpenWithMgt.exe

@@ -14,7 +14,16 @@ OpenWithMgt：C# / WPF / .NET Framework 4.8 的 Windows 右键菜单管理工具
 - 目标框架为 **.NET Framework 4.8**（`net48`，Win10/11 系统自带），保证产物是几十 KB 的绿色单文件 exe；源码使用现代 C# 语法（`LangVersion=latest`），但只能用 net48 具备的 BCL API（例如无 `string.StartsWith(char)` 等 char 重载）
 - 编译需要 **.NET 8 SDK**（`winget install Microsoft.DotNet.SDK.8`）；net48 引用程序集由 NuGet 包 `Microsoft.NETFramework.ReferenceAssemblies`（`PrivateAssets=all`，仅编译期）提供，首次 `dotnet restore` 需联网，之后离线可构建
 - 除上述编译期引用程序集外**不引入第三方 NuGet 包**：MVVM 基础设施（`ViewModelBase` / `RelayCommand`）为手写实现，运行时零依赖
-- 标准构建/发布命令见 [BUILD.md](BUILD.md)；提交代码前必须通过 `dotnet build -c Release`
+- 标准构建/发布命令见 [BUILD.md](BUILD.md)（英文）/ [BUILD.zh-CN.md](BUILD.zh-CN.md)（中文）；提交代码前必须通过 `dotnet build -c Release`
+
+## 发布（Release）约定
+
+- **只有用户明确说"发 release / 发布"时才执行发布流程**；日常提交、push 到 origin/gitee 一律不得打 tag、不得触发发布
+- 发布由 GitHub Actions 完成（`.github/workflows/release.yml`），仅在向 origin 推送 `v*` 标签时触发；流程：
+  1. 升 `src/OpenWithMgt/OpenWithMgt.csproj` 的 `<Version>`（工作流会校验 tag 版本与 csproj 一致，不一致则失败）
+  2. `dotnet build -c Release` 验证通过并提交
+  3. `git tag v<版本>` 后 `git push origin main --tags`（**tag 只推 origin，不推 gitee**）
+  4. 发布后在 GitHub Releases 页面确认产物（zip 与 exe）可下载
 
 ## 代码约定
 

@@ -15,6 +15,9 @@ publish/
 # Rider
 .idea/
 
+# VS Code
+.vscode/
+
 # 其他
 *.log
 Thumbs.db
