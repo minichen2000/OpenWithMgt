@@ -2,7 +2,7 @@
 
 ## 项目概述
 
-OpenWithMgt：C# / WPF / .NET 8 的 Windows 右键菜单管理工具，管理**文件**右键"用 xxx 打开"菜单项。枚举位置（HKCU + HKLM）：
+OpenWithMgt：C# / WPF / .NET Framework 4.8 的 Windows 右键菜单管理工具，管理**文件**右键"用 xxx 打开"菜单项。产物为几十 KB 的单文件绿色 exe（Win10/11 自带 net48，目标机器零依赖）。枚举位置（HKCU + HKLM）：
 
 - `Software\Classes\*\shell` —— 所有文件的 shell 动词项
 - `Software\Classes\*\shellex\ContextMenuHandlers` —— COM 外壳扩展项（"上传到…"类）
@@ -11,8 +11,9 @@ OpenWithMgt：C# / WPF / .NET 8 的 Windows 右键菜单管理工具，管理**�
 ## 构建要求
 
 - 仅 Windows 可构建/运行（依赖 WPF 与注册表 API）
-- 需要 **.NET 8 SDK**（`winget install Microsoft.DotNet.SDK.8`）
-- **不引入第三方 NuGet 包**：MVVM 基础设施（`ViewModelBase` / `RelayCommand`）为手写实现，保持零依赖、离线可构建
+- 目标框架为 **.NET Framework 4.8**（`net48`，Win10/11 系统自带），保证产物是几十 KB 的绿色单文件 exe；源码使用现代 C# 语法（`LangVersion=latest`），但只能用 net48 具备的 BCL API（例如无 `string.StartsWith(char)` 等 char 重载）
+- 编译需要 **.NET 8 SDK**（`winget install Microsoft.DotNet.SDK.8`）；net48 引用程序集由 NuGet 包 `Microsoft.NETFramework.ReferenceAssemblies`（`PrivateAssets=all`，仅编译期）提供，首次 `dotnet restore` 需联网，之后离线可构建
+- 除上述编译期引用程序集外**不引入第三方 NuGet 包**：MVVM 基础设施（`ViewModelBase` / `RelayCommand`）为手写实现，运行时零依赖
 - 标准构建/发布命令见 [BUILD.md](BUILD.md)；提交代码前必须通过 `dotnet build -c Release`
 
 ## 代码约定

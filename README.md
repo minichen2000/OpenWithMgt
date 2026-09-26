@@ -4,7 +4,9 @@
 
 Windows 右键菜单"用 xxx 打开"项管理工具（针对**文件**的右键菜单）。
 
-基于 C# / WPF / .NET 8，开发者：minichen2000。
+基于 C# / WPF / .NET Framework 4.8（Windows 10/11 系统自带），开发者：minichen2000。
+
+产物为几十 KB 的单文件绿色 exe：免安装、无需任何运行时，拷到任意目录即可运行。
 
 ## 功能
 

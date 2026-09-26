@@ -2,7 +2,9 @@
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net8.0-windows</TargetFramework>
+    <!-- 面向 .NET Framework 4.8：Windows 10/11 系统自带，产出单文件绿色 exe，目标机器无需安装任何运行时 -->
+    <TargetFramework>net48</TargetFramework>
+    <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
@@ -14,5 +16,10 @@
     <Authors>minichen2000</Authors>
     <Description>Windows 右键菜单"用 xxx 打开"项管理工具</Description>
   </PropertyGroup>
+
+  <ItemGroup>
+    <!-- 仅编译期使用的 net48 引用程序集，不进入产物；首次 restore 需联网，之后离线可构建 -->
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" PrivateAssets="all" />
+  </ItemGroup>
 
 </Project>

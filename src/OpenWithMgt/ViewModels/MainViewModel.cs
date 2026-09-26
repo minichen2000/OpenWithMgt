@@ -141,7 +141,7 @@ public class MainViewModel : ViewModelBase
             return;
         }
 
-        if (keyName.Contains('\\'))
+        if (keyName.Contains("\\"))
         {
             StatusMessage = "键名不能包含反斜杠";
             return;

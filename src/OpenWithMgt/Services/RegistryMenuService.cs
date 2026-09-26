@@ -39,7 +39,7 @@ public static class RegistryMenuService
             {
                 foreach (var ext in sfa.GetSubKeyNames())
                 {
-                    if (!ext.StartsWith('.'))
+                    if (!ext.StartsWith("."))
                     {
                         continue;
                     }
@@ -57,7 +57,7 @@ public static class RegistryMenuService
 
         foreach (var name in classes.GetSubKeyNames())
         {
-            if (!name.StartsWith('.'))
+            if (!name.StartsWith("."))
             {
                 continue;
             }
@@ -95,8 +95,8 @@ public static class RegistryMenuService
             var rawName = !string.IsNullOrWhiteSpace(muiVerb) ? muiVerb
                         : !string.IsNullOrWhiteSpace(defaultName) ? defaultName
                         : keyName;
-            var displayName = ResolveDisplayName(rawName);
-            if (displayName.StartsWith('@'))
+            var displayName = ResolveDisplayName(rawName!);
+            if (displayName.StartsWith("@"))
             {
                 // 资源引用解析失败（如引用的 DLL 已不存在），回退为键名
                 displayName = keyName;
@@ -133,13 +133,13 @@ public static class RegistryMenuService
             }
 
             var clsid = item.GetValue(null) as string;
-            if (string.IsNullOrWhiteSpace(clsid) && keyName.StartsWith('{'))
+            if (string.IsNullOrWhiteSpace(clsid) && keyName.StartsWith("{"))
             {
                 clsid = keyName;
             }
 
             var friendlyName = ResolveClsidName(clsid);
-            var display = friendlyName ?? (keyName.StartsWith('{') ? clsid ?? keyName : keyName);
+            var display = friendlyName ?? (keyName.StartsWith("{") ? clsid ?? keyName : keyName);
 
             result.Add(new ContextMenuItem
             {
@@ -157,7 +157,7 @@ public static class RegistryMenuService
 
     private static string? ResolveClsidName(string? clsid)
     {
-        if (string.IsNullOrWhiteSpace(clsid) || !clsid.StartsWith('{'))
+        if (string.IsNullOrWhiteSpace(clsid) || !clsid!.StartsWith("{"))
         {
             return null;
         }
@@ -177,7 +177,7 @@ public static class RegistryMenuService
 
     private static string ResolveDisplayName(string raw)
     {
-        if (raw.StartsWith('@'))
+        if (raw.StartsWith("@"))
         {
             // 注册表中的间接字符串写法不一：可能含未展开的环境变量，甚至双反斜杠
             var candidates = new[]
